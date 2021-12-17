@@ -4,7 +4,6 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/topojson.v1.min.js"></script>
   <style>
-    
   </style>
 </head>
 
@@ -26,24 +25,20 @@
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    
 
     var nodes=[]
     var edges=[]
 
     d3.json('graph.json').then((json) => {
         let i=1
-        //console.log(json.nodes);
-        //nodes.push(json.nodes);
+
         for (let i = 0; i < json.nodes.length; i++){
             nodes.push(json.nodes[i])
         }
-        //edges=json.edges
 
         for(let i = 0; i < json.links.length; i++){
             edges.push(json.links[i])
         }
-        //console.log(edges)
         adjancencymatrix = createAdjacencyMatrix(nodes, edges)
         console.log(adjancencymatrix);
 
@@ -51,7 +46,6 @@
 
         var positionsPersonnages = 
           d3.range(nodes.length);	// un tableau d'autant d'element que de personnages
-                  // [0, 1, ..., 106]
         var echellexy = d3.scaleBand()
           .range([0,width]) // TODO correspond [0, largeur du dessin]
           .domain(positionsPersonnages)
@@ -59,12 +53,8 @@
           .align(0)
           .round(true);
 
-            //TODO
-            //.text("test")
-
         var scale = d3.scaleQuantize()
           .domain([0, d3.max(nodes, (d)=>{
-            //console.log (d.influence)
             return d.influence
           })]) // TODO
           .range(d3.schemeBlues[9]); // donné par D3
@@ -88,7 +78,6 @@
             .style("stroke", "black")
             .style("stroke-width", ".2px")
             .style("fill", function (d) {
-              //TODO
               return scale(d.weight)
             })
             .attr("transform", "translate(25, 40)")
@@ -107,21 +96,18 @@
               .text((d)=>{
                 return d.character
               })
-              // .attr("x", d=>{return echellexy(d.id)})
-              // .attr("y", 0)
+
               .attr("dx", 7)
               .attr("dy", d=>{
                 return echellexy(d.id)
               })
               .attr("transform", "rotate(-90)") // on tourne tout l'axe de 90°
-              //.attr("text-anchor", "end")
 
             var rows = labels
               .append("g")
               .selectAll()
               .data(nodes)
               .join("text")
-              
               .attr("dx", -10)
               .attr("dy", d=>{
                 return echellexy(d.id)
@@ -164,12 +150,10 @@ function createAdjacencyMatrix(
     positions = appearances,
     symetric = false
     ) {
-        
     var edgeHash = {};
 
     for (x in edges) {
         var id = edges[x].source + "-" + edges[x].target;
-        //console.log(edges[x])
         edgeHash[id] = edges[x];
     }
 
