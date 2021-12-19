@@ -8,8 +8,16 @@
 </head>
 
 <body>
+  <div style="text-align: center;">
+    <select id="mySelect" style="text-align:center;">
+      <option value="appearances">Appearances</option>
+      <option value="zones">Zones</option>
+      <option value="influences">influences</option>
+    </select>
+  </div>
+  
   <div id="matrice"></div>
-
+  
   <script>
       // Definition de la taille du svg
     const margin = { top: 0, right: 30, bottom: 20, left: 10 },
@@ -25,9 +33,12 @@
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+    var zoneScale = d3.scaleOrdinal(d3.schemeCategory10);
+
 
     var nodes=[]
     var edges=[]
+    
 
     d3.json('graph.json').then((json) => {
         let i=1
@@ -39,10 +50,8 @@
         for(let i = 0; i < json.links.length; i++){
             edges.push(json.links[i])
         }
-        adjancencymatrix = createAdjacencyMatrix(nodes, edges)
-        console.log(adjancencymatrix);
-
-        console.log("La taille de nodes: " + nodes.length)
+        //adjancencymatrix = createAdjacencyMatrix(nodes, edges)
+        adjancencymatrix= createAdjacencyMatrix(nodes, edges, undefined, true)
 
         var positionsPersonnages = 
           d3.range(nodes.length);	// un tableau d'autant d'element que de personnages
@@ -62,13 +71,8 @@
           matrixViz = svg.selectAll("rect")
             .data(adjancencymatrix)
             .join("rect")
-
-            .attr("width", (d)=>{
-              return echellexy(5)
-            })
-            .attr("height", (d)=>{
-              return echellexy(5)
-            })
+            .attr("width", echellexy(1))
+            .attr("height", echellexy(1))
             .attr("x", function (d) {
               return echellexy(d.x)
             })
@@ -78,7 +82,18 @@
             .style("stroke", "black")
             .style("stroke-width", ".2px")
             .style("fill", function (d) {
-              return scale(d.weight)
+              if(d.zone_s==d.zone_t){
+                return zoneScale(d.zone_s)
+              }else{
+                return "#eee"
+              }
+            })
+            .attr("opacity",(d)=>{
+              if(d.weight==0){
+                return "0%"
+              }else{
+                return "90%"
+              }
             })
             .attr("transform", "translate(25, 40)")
 
@@ -88,7 +103,7 @@
               .style("font-size", "8px")
               .style("font-family", "sans-serif");
 
-            var rows = labels
+            var columns  = labels
               .append("g")
               .selectAll()
               .data(nodes)
@@ -116,6 +131,44 @@
               .text((d)=>{
                 return d.character
               })
+
+              d3.select("#mySelect").on("change", function() {
+                  update(this.value)
+              });
+
+              function update (newPositon) {
+                position=null
+                if(newPositon=="appearances"){
+                  position=appearances
+                }else if(newPositon=="zones"){
+                  position=zones
+                }else{
+                  position=influences
+                }
+                echellexy.domain(position) // ici on met à jour la fonction de calcul des positions qui nous permettra de repositionner.
+                rows
+                  .attr("dx", -10)
+                  .attr("dy", d=>{
+                    return echellexy(d.id)
+                  })
+
+                columns
+                  .attr("dx", 7)
+                  .attr("dy", d=>{
+                    return echellexy(d.id)
+                  })
+
+                var matrixViz= svg.selectAll("rect")
+                  .transition()
+                  .delay(function(d, i) { return i ; })
+                  .duration(2000)
+                  .attr("x", function (d) {
+                    return echellexy(d.x)
+                  })
+                  .attr("y", function (d) {
+                    return echellexy(d.y)
+                  })
+              }
       });
 
     var appearances = [
